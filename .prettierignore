@@ -1,0 +1,7 @@
+public
+node_modules
+.quartz-cache
+.quartz
+
+# 옵시디언 노트와 템플릿은 원문 그대로 두기 (prettier가 {{date}} 같은 문법을 망가뜨림)
+content

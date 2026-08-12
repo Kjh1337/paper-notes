@@ -1,0 +1,11 @@
+filters:
+  and:
+    - file.ext == "md"
+    - file.inFolder("papers")
+    - file.name != "index"
+views:
+  - type: paperList
+    name: Paper Review
+    sort:
+      - property: note.created
+        direction: DESC

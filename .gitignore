@@ -1,0 +1,18 @@
+.DS_Store
+.gitignore
+node_modules
+public
+prof
+tsconfig.tsbuildinfo
+.obsidian
+.quartz-cache
+private/
+.replit
+replit.nix
+.quartz/
+quartz/cli/tui/dist/
+.turbo/
+
+# 로컬 전용 설정 (공개 저장소에 올리지 않습니다)
+# iCloud가 만드는 " 2.json" 같은 중복 파일까지 함께 걸러 냅니다.
+.claude/settings.local*.json

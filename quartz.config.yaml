@@ -1,0 +1,391 @@
+# yaml-language-server: $schema=./quartz/plugins/quartz-plugins.schema.json
+#
+# 논문 리뷰 블로그 설정
+# 문서: https://quartz.jzhao.xyz/configuration
+#
+configuration:
+  pageTitle: Paper Notes
+  pageTitleSuffix: ""
+  enableSPA: true
+  enablePopovers: true # 링크에 마우스를 올리면 미리보기 팝업
+  locale: ko-KR
+
+  # GitHub Pages 주소. RSS·사이트맵·og 이미지·canonical 링크가 여기서 만들어집니다.
+  # 나중에 직접 산 도메인을 붙이면 이 줄을 그 도메인으로 바꾸세요.
+  baseUrl: kjh1337.github.io/paper-notes
+
+  ignorePatterns:
+    - private # 비공개 노트를 두는 폴더 (빌드에서 제외)
+    - templates
+    - .obsidian
+
+  theme:
+    # 폰트 실제 로딩은 아래 quartz-fonts 플러그인이 담당합니다.
+    # 여기서 googleFonts로 두면 같은 폰트를 두 번 요청하게 되므로 local로 둡니다.
+    fontOrigin: local
+    cdnCaching: true
+    typography:
+      header: Gowun Batang # 한글 명조 — 제목에 논문/학술지 느낌
+      body: IBM Plex Sans KR # 한글 본문 가독성이 좋은 산세리프
+      code: IBM Plex Mono
+    colors:
+      lightMode:
+        light: "#fdfdfc" # 배경
+        lightgray: "#e8e6e3" # 구분선
+        gray: "#9d9994" # 흐린 텍스트
+        darkgray: "#4a4844" # 본문
+        dark: "#1f1e1c" # 제목
+        secondary: "#2f5d8c" # 링크 / 강조
+        tertiary: "#7a9bb8" # 호버
+        highlight: rgba(47, 93, 140, 0.09)
+        textHighlight: "#fff23688"
+      darkMode:
+        light: "#171716"
+        lightgray: "#333331"
+        gray: "#6b6863"
+        darkgray: "#cfccc6"
+        dark: "#eeece8"
+        secondary: "#8ab4dd"
+        tertiary: "#5f88ad"
+        highlight: rgba(138, 180, 221, 0.12)
+        textHighlight: "#b3aa0288"
+
+plugins:
+  # ─────────────────────────────────────────────
+  # 마크다운 변환 (옵시디언 문법 그대로 처리)
+  # ─────────────────────────────────────────────
+  - source: "@quartz-community/created-modified-date"
+    enabled: true
+    options:
+      defaultDateType: created # 논문 리뷰는 "작성일" 기준이 자연스러움
+      priority:
+        - frontmatter
+        - git
+        - filesystem
+    order: 10
+
+  - source: "@quartz-community/syntax-highlighting"
+    enabled: true
+    options:
+      theme:
+        light: github-light
+        dark: github-dark
+      keepBackground: false
+    order: 20
+
+  # [[위키링크]], ![[이미지]], > [!note] 콜아웃, ==하이라이트== 등
+  - source: "@quartz-community/obsidian-flavored-markdown"
+    enabled: true
+    options:
+      enableInHtmlEmbed: false
+      enableCheckbox: true
+    order: 30
+
+  - source: "@quartz-community/github-flavored-markdown"
+    enabled: true
+    order: 40
+
+  - source: "@quartz-community/table-of-contents"
+    enabled: true
+    order: 50
+    layout:
+      position: right
+      priority: 30
+
+  - source: "@quartz-community/crawl-links"
+    enabled: true
+    options:
+      markdownLinkResolution: shortest
+    order: 60
+
+  - source: "@quartz-community/description"
+    enabled: true
+    order: 70
+
+  # 논문 수식 렌더링 ($...$, $$...$$)
+  - source: "@quartz-community/latex"
+    enabled: true
+    options:
+      renderEngine: katex
+    order: 80
+
+  # BibTeX 인용([@key])이 필요해지면 true로 바꾸고 .bib 파일을 연결하세요
+  - source: "@quartz-community/citations"
+    enabled: false
+    order: 85
+
+  - source: "@quartz-community/hard-line-breaks"
+    enabled: false
+    order: 90
+  - source: "@quartz-community/ox-hugo"
+    enabled: false
+    order: 91
+  - source: "@quartz-community/roam"
+    enabled: false
+    order: 92
+
+  # 폰트 플러그인은 configuration.theme.typography를 자동으로 따라가지 않고
+  # 자체 옵션으로 --headerFont/--bodyFont를 덮어씁니다. 위 typography와 같은 값을 넣어 주세요.
+  - source: "@quartz-community/quartz-fonts"
+    enabled: true
+    options:
+      fontOrigin: googleFonts
+      useThemeFonts: false
+      title: Gowun Batang
+      header: Gowun Batang
+      body:
+        name: IBM Plex Sans KR
+        weights: [400, 600, 700]
+        includeItalic: false
+      interface:
+        name: IBM Plex Sans KR
+        weights: [400, 600]
+        includeItalic: false
+      code: IBM Plex Mono
+
+  # ─────────────────────────────────────────────
+  # 발행 제어
+  # ─────────────────────────────────────────────
+  # frontmatter에 draft: true 인 글은 빌드에서 제외
+  - source: "@quartz-community/remove-draft"
+    enabled: true
+
+  # true로 바꾸면 publish: true 인 글만 발행됩니다 (옵시디언 볼트를 통째로 넣을 때 유용)
+  - source: "@quartz-community/explicit-publish"
+    enabled: false
+
+  - source: "@quartz-community/alias-redirects"
+    enabled: true
+
+  - source: "@quartz-community/content-index"
+    enabled: true
+    options:
+      enableSiteMap: true
+      enableRSS: true
+
+  - source: "@quartz-community/favicon"
+    enabled: true
+
+  - source: "@quartz-community/og-image" # SNS 공유 시 미리보기 카드 이미지 자동 생성
+    enabled: true
+
+  # 직접 산 도메인을 붙일 때만 켭니다.
+  # 켜 두면 baseUrl의 호스트로 CNAME 파일을 만드는데, 지금처럼
+  # kjh1337.github.io/paper-notes (프로젝트 사이트)에서는 CNAME에
+  # "kjh1337.github.io"가 적혀 나가서 Pages 배포가 깨집니다.
+  - source: "@quartz-community/cname"
+    enabled: false
+
+  # ─────────────────────────────────────────────
+  # 페이지 종류
+  # ─────────────────────────────────────────────
+  - source: "@quartz-community/canvas-page"
+    enabled: true
+  - source: "@quartz-community/content-page"
+    enabled: true
+  # 폴더 목록 페이지(/papers/)는 쓰지 않습니다. 분류는 태그로만.
+  - source: "@quartz-community/folder-page"
+    enabled: false
+  - source: "@quartz-community/tag-page"
+    enabled: true
+  - source: "@quartz-community/bases-page"
+    enabled: true
+    options: {}
+    order: 50
+
+  # ─────────────────────────────────────────────
+  # 탐색 경로 (왼쪽 사이드바)
+  # ─────────────────────────────────────────────
+  # 사이트 제목은 custom/ProfileCard.tsx 가 사진·이름과 함께 그리므로 여기서는 끕니다.
+  - source: "@quartz-community/page-title"
+    enabled: false
+    layout:
+      position: left
+      priority: 10
+
+  - source: "@quartz-community/search" # 전문 검색 (Ctrl/Cmd + K)
+    enabled: true
+    layout:
+      position: left
+      priority: 20
+      group: toolbar
+      groupOptions:
+        grow: true
+
+  - source: "@quartz-community/darkmode"
+    enabled: true
+    layout:
+      position: left
+      priority: 30
+      group: toolbar
+
+  - source: "@quartz-community/reader-mode"
+    enabled: true
+    layout:
+      position: left
+      priority: 35
+      group: toolbar
+
+  - source: "@quartz-community/spacer"
+    enabled: true
+    options: {}
+    order: 25
+    layout:
+      position: left
+      priority: 25
+      display: mobile-only
+
+  # 폴더 트리 대신 custom/TagNav.tsx (분야 목록) 를 씁니다.
+  - source: "@quartz-community/explorer"
+    enabled: false
+    layout:
+      position: left
+      priority: 50
+
+  # ─────────────────────────────────────────────
+  # 문맥 (오른쪽 사이드바)
+  # ─────────────────────────────────────────────
+  # 홈 화면이 이미 전체 목록이라 껐습니다. 오른쪽에 최근 글을 띄우고 싶으면 true로.
+  - source: "@quartz-community/recent-notes"
+    enabled: false
+    options:
+      title: 최근 리뷰
+      limit: 5
+      showTags: true
+      hideTagPages: true
+      hideFolderPages: true
+    layout:
+      position: right
+      priority: 10
+
+  - source: "@quartz-community/backlinks" # 이 논문을 인용한 다른 노트
+    enabled: true
+    layout:
+      position: right
+      priority: 50
+
+  # 그래프 뷰는 시각적 노이즈가 커서 껐습니다. 보고 싶으면 true로 바꾸세요.
+  - source: "@quartz-community/graph"
+    enabled: false
+    layout:
+      position: right
+      priority: 20
+
+  # ─────────────────────────────────────────────
+  # 본문 상/하단
+  # ─────────────────────────────────────────────
+  # 폴더 계층이 없어졌으므로 breadcrumb도 뺍니다.
+  - source: "@quartz-community/breadcrumbs"
+    enabled: false
+    layout:
+      position: beforeBody
+      priority: 5
+      condition: not-index
+
+  # 홈(/)은 논문 목록만 보여 주면 되므로 제목·날짜 줄을 그리지 않습니다.
+  - source: "@quartz-community/article-title"
+    enabled: true
+    layout:
+      position: beforeBody
+      priority: 10
+      condition: not-index
+
+  - source: "@quartz-community/content-meta" # 작성일 · 읽는 시간
+    enabled: true
+    layout:
+      position: beforeBody
+      priority: 20
+      condition: not-index
+
+  # custom/TagList.tsx 로 대체했습니다 (태그 표시 이름을 gabm → GABM 처럼 되돌리기 위해).
+  - source: "@quartz-community/tag-list"
+    enabled: false
+    layout:
+      position: beforeBody
+      priority: 30
+
+  # frontmatter를 실제로 읽어들이는 필수 플러그인 (끄면 title·tags·date가 전부 무시됨).
+  # 다만 frontmatter를 표로 다시 보여주는 패널은 tag-list와 중복이라 숨겼습니다.
+  - source: "@quartz-community/note-properties"
+    enabled: true
+    options:
+      includeAll: false
+      includedProperties:
+        - description
+        - tags
+        - aliases
+      excludedProperties: []
+      hidePropertiesView: true
+    order: 5
+    layout:
+      position: beforeBody
+      priority: 15
+
+  # 댓글이 필요하면 giscus 설정 후 true (https://giscus.app)
+  - source: "@quartz-community/comments"
+    enabled: false
+    options:
+      provider: giscus
+      options: {}
+    layout:
+      position: afterBody
+      priority: 10
+
+  - source: "@quartz-community/stacked-pages"
+    enabled: false
+    layout:
+      position: afterBody
+      priority: 50
+      display: all
+
+  - source: "@quartz-community/footer"
+    enabled: true
+    options:
+      links:
+        RSS: /index.xml
+    layout:
+      position: footer
+      priority: 50
+
+  # ─────────────────────────────────────────────
+  # 기타
+  # ─────────────────────────────────────────────
+  - source: "@quartz-community/unlisted-pages"
+    enabled: true
+    options: {}
+    order: 45
+
+  - source: "@quartz-community/encrypted-pages"
+    enabled: true
+    options:
+      iterations: 600000
+      passwordField: password
+      unlistWhenEncrypted: false
+      outputPath: static/encryptedContentIndex.json
+    order: 900
+
+layout:
+  groups:
+    toolbar:
+      priority: 35
+      direction: row
+      gap: 0.5rem
+  byPageType:
+    "404":
+      positions:
+        beforeBody: []
+        left: []
+        right: []
+    content: {}
+    folder:
+      exclude:
+        - reader-mode
+      positions:
+        right: []
+    tag:
+      exclude:
+        - reader-mode
+      positions:
+        right: []
+    canvas: {}
+    bases: {}

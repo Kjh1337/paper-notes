@@ -1,0 +1,913 @@
+@use "./variables.scss" as *;
+
+/* ==========================================================================
+   논문 리뷰 블로그 — 가독성 / 탐색성 중심 커스텀 스타일
+   목표: 긴 글을 오래 읽어도 피로하지 않게, 원하는 정보를 빨리 찾을 수 있게
+   ========================================================================== */
+
+/* --- 0. 프로필 카드 (custom/ProfileCard.tsx) ----------------------------
+   왼쪽 사이드바 맨 위: 사진 → 사이트 이름 → 이름 → 한 줄 소개 → 위치 → 링크
+   내용은 custom/ProfileCard.tsx 상단의 PROFILE 상수에서 바꿉니다.
+   사진은 quartz/static/profile.png 를 덮어쓰면 됩니다. */
+.profile-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  gap: 0.15rem;
+  padding-bottom: 1.1rem;
+  margin-bottom: 0.2rem;
+  border-bottom: 1px solid var(--lightgray);
+
+  /* 사이드바 폭(320px - 좌우 여백 2rem씩 = 256px)을 꽉 채웁니다.
+     작은 동그라미로 두면 사진에 뭐가 찍혔는지 안 보여서 넣는 의미가 없습니다.
+     비율을 바꾸려면 aspect-ratio 한 줄만 고치면 됩니다 (1/1, 3/2 …).
+     모서리 둥글기는 목록 썸네일(2px)과 맞췄습니다. */
+  & > .profile-avatar {
+    display: block;
+    width: 100%;
+    line-height: 0;
+
+    & > img {
+      width: 100%;
+      height: auto;
+      aspect-ratio: 4 / 3;
+      border-radius: 2px;
+      object-fit: cover;
+    }
+  }
+
+  & > .page-title {
+    font-size: 1.2rem;
+    line-height: 1.4;
+    margin: 0.75rem 0 0.35rem 0;
+    font-family: var(--titleFont);
+    word-break: keep-all;
+
+    & > a {
+      background-color: transparent;
+    }
+  }
+
+  & > .profile-name {
+    margin: 0;
+    font-size: 0.88rem;
+    font-weight: $semiBoldWeight;
+    color: var(--dark);
+  }
+
+  & > .profile-tagline {
+    margin: 0.15rem 0 0 0;
+    font-size: 0.8rem;
+    line-height: 1.6;
+    color: var(--gray);
+    word-break: keep-all;
+  }
+
+  & > .profile-location {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin: 0.5rem 0 0 0;
+    font-size: 0.76rem;
+    color: var(--gray);
+
+    & svg {
+      width: 13px;
+      height: 13px;
+      flex: 0 0 13px;
+    }
+  }
+
+  /* 아이콘만 두면 무엇인지 눌러 봐야 알 수 있어 글자를 같이 답니다 (참고 사이트와 동일) */
+  & > .profile-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    list-style: none;
+    margin: 0.3rem 0 0 0;
+    padding: 0;
+
+    & li {
+      margin: 0;
+    }
+
+    & a {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.15rem 0;
+      background-color: transparent;
+      color: var(--gray);
+      font-size: 0.76rem;
+      text-decoration: none;
+      transition: color 0.15s ease;
+
+      &:hover {
+        color: var(--secondary);
+      }
+    }
+
+    & svg {
+      width: 15px;
+      height: 15px;
+      flex: 0 0 15px;
+    }
+  }
+}
+
+/* 모바일에서는 상단 바처럼 가로로 눕히고 소개 문구는 감춥니다 */
+@media all and ($mobile) {
+  .profile-card {
+    flex-direction: row;
+    align-items: center;
+    text-align: left;
+    gap: 0.6rem;
+    padding: 0;
+    border-bottom: none;
+    /* 가로 배치라 넓어지기 쉬움 — 줄어들 수 있게 해야 페이지 전체가 가로로 밀리지 않습니다 */
+    flex: 0 1 auto;
+    min-width: 0;
+
+    /* 모바일은 사이드바가 가로 막대라, 사진은 제목 옆 작은 조각으로만 둡니다 */
+    & > .profile-avatar {
+      flex: 0 0 auto;
+      width: auto;
+
+      & > img {
+        width: 52px;
+        height: 39px;
+      }
+    }
+
+    & > .page-title {
+      font-size: 1.15rem;
+      margin: 0;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    & > .profile-name,
+    & > .profile-tagline,
+    & > .profile-location,
+    & > .profile-links {
+      display: none;
+    }
+  }
+}
+
+/* --- 1. 한글 본문 가독성 ------------------------------------------------- */
+.page > #quartz-body article {
+  line-height: 1.85;
+  letter-spacing: -0.003em;
+
+  /* 한글은 어절 단위로 끊어야 읽기 좋습니다 (단어 중간에서 안 잘림) */
+  p,
+  li,
+  dd,
+  blockquote {
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+
+  p {
+    margin: 1.1rem 0;
+  }
+}
+
+/* --- 2. 제목 위계: 긴 리뷰를 눈으로 스캔할 수 있게 ------------------------ */
+.page > #quartz-body article {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    word-break: keep-all;
+    line-height: 1.35;
+    scroll-margin-top: 2rem; /* 목차 클릭 시 제목이 화면 위에 딱 붙지 않도록 */
+  }
+
+  /* h2 = 논문 리뷰의 대단원. 옅은 구분선으로 섹션 경계를 분명히 */
+  h2 {
+    margin-top: 3rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--lightgray);
+  }
+
+  h3 {
+    margin-top: 2rem;
+  }
+}
+
+/* --- 3. 목록 / 표: 정보 밀도 높은 부분을 정돈 ---------------------------- */
+.page > #quartz-body article {
+  ul,
+  ol {
+    padding-left: 1.4rem;
+  }
+
+  li {
+    margin: 0.35rem 0;
+  }
+
+  /* 중첩 목록은 살짝 조여서 계층이 보이게 */
+  li > ul,
+  li > ol {
+    margin: 0.25rem 0;
+  }
+
+  /* 실험 결과표는 가로로 길어지기 쉬움 → 표 안에서만 가로 스크롤 */
+  table {
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+
+  th {
+    background-color: var(--lightgray);
+    font-weight: $semiBoldWeight;
+    white-space: nowrap;
+  }
+
+  td,
+  th {
+    padding: 0.45rem 0.7rem;
+  }
+
+  /* 숫자 컬럼 정렬이 어긋나지 않도록 표 안에서는 고정폭 숫자 사용 */
+  td {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* --- 4. 수식: 긴 수식이 레이아웃을 밀어내지 않게 ------------------------- */
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.4rem 0;
+}
+
+/* --- 5. 그림 / 이미지: 논문 figure 캡션 처리 ----------------------------- */
+.page > #quartz-body article {
+  img {
+    border-radius: 5px;
+    margin: 1.5rem auto;
+  }
+
+  /* 이미지 바로 다음 줄의 기울임 문단을 캡션처럼 표시
+     사용법:  ![[figure1.png]]
+              *Figure 1. 모델 구조* */
+  img + em,
+  p > img + br + em {
+    display: block;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--gray);
+    margin-top: -0.8rem;
+  }
+}
+
+/* --- 6. 인용구: 논문 원문 발췌를 본문과 구분 ---------------------------- */
+.page > #quartz-body article blockquote:not(.callout) {
+  border-left: 3px solid var(--secondary);
+  padding: 0.1rem 0 0.1rem 1.1rem;
+  color: var(--darkgray);
+}
+
+/* --- 6-1. 콜아웃(> [!note]): 제목과 본문을 바짝 붙여 덩어리로 읽히게 ---- */
+.page > #quartz-body article .callout {
+  margin: 1.5rem 0;
+
+  & > .callout-title {
+    align-items: center;
+    padding: 0.85rem 0 0 0;
+
+    & > .callout-title-inner > p {
+      margin: 0;
+      line-height: 1.5;
+    }
+  }
+
+  & > .callout-content {
+    padding-bottom: 0.85rem;
+
+    & > p {
+      margin: 0.5rem 0;
+    }
+
+    & > :first-child {
+      margin-top: 0.5rem;
+    }
+
+    & > :last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+/* --- 7. 링크: 밑줄은 은은하게, 호버 시 명확하게 ------------------------- */
+.page > #quartz-body article a.internal {
+  background-color: transparent;
+  padding: 0;
+  border-radius: 0;
+  text-decoration: underline;
+  text-decoration-color: var(--tertiary);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+
+  &:hover {
+    text-decoration-color: var(--secondary);
+    text-decoration-thickness: 2px;
+  }
+}
+
+/* --- 8. 목차(TOC): 현재 위치를 또렷하게 --------------------------------- */
+.toc {
+  font-size: 0.86rem;
+
+  .toc-title {
+    font-weight: $semiBoldWeight;
+  }
+
+  ul.overflow > li {
+    line-height: 1.5;
+    margin: 0.3rem 0;
+
+    & > a.in-view {
+      color: var(--dark);
+      font-weight: $semiBoldWeight;
+      opacity: 1;
+    }
+  }
+}
+
+/* --- 9. 탐색기(폴더 트리): 분야 구분이 한눈에 -------------------------- */
+.explorer {
+  font-size: 0.92rem;
+
+  .folder-title {
+    font-weight: $semiBoldWeight;
+  }
+
+  li > .folder-outer > ul {
+    padding-left: 0.6rem;
+  }
+}
+
+/* --- 8-1. 홈은 오른쪽 칸 없이 넓게 --------------------------------------
+   홈(/)에는 목차·백링크가 없어 오른쪽이 비어 버립니다.
+   그 칸을 지우고 목록이 그 폭까지 쓰도록 그리드를 2열로 바꿉니다.
+   (모바일은 원래 1열이라 손대지 않습니다.) */
+body[data-slug="index"] {
+  & .right.sidebar {
+    display: none;
+  }
+
+  @media all and not ($mobile) {
+    & .page > #quartz-body {
+      grid-template-columns: $sidePanelWidth auto;
+      grid-template-areas:
+        "grid-sidebar-left grid-header"
+        "grid-sidebar-left grid-center"
+        "grid-sidebar-left grid-footer";
+    }
+  }
+}
+
+/* --- 9-0. 분야 메뉴 (custom/TagNav.tsx) ---------------------------------
+   왼쪽 사이드바의 목차. "전체 글" 한 줄 + 분야 몇 개가 전부입니다.
+   무엇이 올라오는지는 custom/tagNames.ts 의 FIELD_TAGS 에서 정합니다.
+   글자 목록으로만 보이게 두고, 상자·칩·배경은 쓰지 않습니다. */
+.tag-nav {
+  /* 사이드바 높이가 100vh로 고정이라, 항목이 많아지면 목록이 잘려 나갑니다.
+     남은 높이만 차지하고 그 안에서 스크롤되게 합니다. */
+  display: flex;
+  flex-direction: column;
+  flex: 0 1 auto;
+  min-height: 0;
+
+  & .tag-nav-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: 0.9rem;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+
+    & > li {
+      margin: 0;
+    }
+  }
+
+  /* "전체 글"은 목차의 머리 — 조금 굵게, 아래에 구분선 */
+  & .tag-nav-all {
+    margin-bottom: 0.35rem !important;
+    padding-bottom: 0.35rem;
+    border-bottom: 1px solid var(--lightgray);
+
+    & a {
+      font-weight: $semiBoldWeight;
+      color: var(--dark);
+    }
+  }
+
+  & .tag-nav-list a {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    padding: 0.25rem 0;
+    background-color: transparent;
+    color: var(--darkgray);
+    text-decoration: none;
+    font-weight: $normalWeight;
+    transition: color 0.15s ease;
+
+    &:hover {
+      color: var(--secondary);
+    }
+
+    /* 현재 보고 있는 분야: 색 대신 두께로 — 목록이 알록달록해지지 않게 */
+    &.active {
+      color: var(--dark);
+      font-weight: $semiBoldWeight;
+    }
+  }
+
+  & .tag-nav-count {
+    margin-left: auto;
+    font-size: 0.78rem;
+    color: var(--gray);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* 목차의 꼬리 — 분야 목록과 같은 무게로 읽히지 않게 한 단 낮춥니다 */
+  & .tag-nav-more {
+    margin-top: 0.35rem !important;
+    padding-top: 0.35rem;
+    border-top: 1px solid var(--lightgray);
+
+    & a {
+      font-size: 0.82rem;
+      color: var(--gray);
+    }
+  }
+}
+
+/* 모바일: 왼쪽 사이드바가 가로 막대가 되므로, 분야 목록도 가로 칩 줄로 눕힙니다 */
+@media all and ($mobile) {
+  /* 기본 그리드가 auto(=max-content)라, 칩이 많아지면 페이지 전체가 가로로 늘어납니다.
+     minmax(0, 1fr)로 묶어 두고 칩 줄만 안에서 스크롤되게 합니다. */
+  .page > #quartz-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .page > #quartz-body .sidebar.left {
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+
+  /* 모바일에서는 한 줄짜리 가로 메뉴로 눕힙니다. 칩이 아니라 글자 그대로 */
+  .tag-nav {
+    flex-basis: 100%;
+    min-width: 0;
+    margin-top: 0.7rem;
+    padding-top: 0.6rem;
+    border-top: 1px solid var(--lightgray);
+
+    & .tag-nav-list {
+      display: flex;
+      gap: 0.9rem;
+      overflow-x: auto;
+      padding-bottom: 0.2rem;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    & .tag-nav-all,
+    & .tag-nav-more {
+      margin: 0 !important;
+      padding: 0;
+      border: none;
+    }
+
+    & .tag-nav-list a {
+      padding: 0.2rem 0;
+      white-space: nowrap;
+      font-size: 0.85rem;
+    }
+
+    & .tag-nav-count {
+      margin-left: 0.3rem;
+    }
+  }
+}
+
+/* --- 9-1. 탐색기가 페이지를 강제로 스크롤하지 않게 ----------------------
+   탐색기는 첫 로드 때 현재 문서를 scrollIntoView로 화면에 맞추는데,
+   이때 창 전체가 같이 스크롤되어 글 제목·breadcrumb가 화면 위로 밀려납니다.
+   scroll-margin을 아주 크게 주면 스크롤 목표 위치가 음수가 되어 0으로 고정되므로,
+   글은 항상 맨 위(제목)부터 보이게 됩니다. */
+.explorer-content ul li > a.active {
+  scroll-margin-top: 100000px;
+}
+
+/* --- 9-2. 백링크에서 전체 목록(.base) 제외 ------------------------------
+   전체 목록 페이지는 모든 논문을 링크하므로 모든 글의 백링크에 항상 나타납니다.
+   정보가 없는 항목이라 감추고, 그것뿐이면 "백링크" 제목까지 통째로 숨깁니다. */
+.backlinks {
+  & li:has(> a[href$=".base"]) {
+    display: none;
+  }
+
+  &:not(:has(li > a:not([href$=".base"]))) {
+    display: none;
+  }
+}
+
+/* --- 10. 태그: 칩이 아니라 쉼표로 이은 글자 줄 -------------------------
+   글 상단의 태그 줄은 custom/TagList.tsx 가 그립니다 (표시 이름 변환 때문).
+   기본 플러그인을 껐으므로 가로 배치도 여기서 직접 잡아 줍니다.
+
+   동그란 칸을 씌우면 태그 하나하나가 버튼처럼 보여서 본문보다 시선을 먼저 끕니다.
+   태그는 분류 표시일 뿐이므로 배경·테두리 없이 작은 글자로만 둡니다. */
+.page > #quartz-body .tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 0.3rem;
+  list-style: none;
+  margin: 1.1rem 0 0 0;
+  padding: 0;
+  font-size: 0.82rem;
+  line-height: 1.7;
+
+  /* 목록 점(○)이 태그 옆에 찍히지 않도록 li에도 직접 걸어 둡니다 */
+  & > li {
+    margin: 0;
+    list-style: none;
+
+    &::marker {
+      content: "";
+    }
+
+    /* 마지막 태그 뒤에는 쉼표를 붙이지 않습니다 */
+    &:not(:last-child)::after {
+      content: ",";
+      color: var(--gray);
+    }
+  }
+}
+
+.page > #quartz-body .tags > li > a.internal.tag-link {
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background-color: transparent;
+  color: var(--gray);
+  font-weight: $normalWeight;
+  text-decoration: none;
+
+  &:hover {
+    color: var(--secondary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+}
+
+/* --- 11. 태그 페이지 목록 -----------------------------------------------
+   /tags/xxx 의 글 목록. 홈의 논문 목록과 같은 모양으로 맞춥니다.
+   상자에 넣지 않고 제목 → 날짜 → 태그 순서로 쌓고, 사이에 얇은 선만 둡니다. */
+.page-listing {
+  & > p {
+    font-size: 0.85rem;
+    color: var(--gray);
+    margin: 0 0 1.2rem 0;
+  }
+
+  ul.section-ul {
+    margin-top: 0;
+  }
+
+  li.section-li {
+    margin: 0;
+    border-bottom: 1px solid var(--lightgray);
+  }
+
+  /* 기본은 날짜/제목 2단 그리드입니다. 세로로 쌓되, HTML 순서가 날짜 → 제목이므로
+     order로 제목을 위로 올립니다 (홈 목록과 순서를 맞추기 위해). */
+  li.section-li > .section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    box-sizing: border-box;
+    padding: 1.4rem 0;
+    line-height: 1.6;
+
+    & > .desc {
+      order: 1;
+      width: 100%;
+    }
+
+    & > .meta {
+      order: 2;
+    }
+
+    & > .tags {
+      order: 3;
+    }
+
+    & > .desc > h3 {
+      margin: 0;
+      font-size: 1.15rem;
+      line-height: 1.5;
+      word-break: keep-all;
+
+      & > a {
+        font-weight: $semiBoldWeight;
+        color: var(--dark);
+        text-decoration: none;
+        transition: color 0.15s ease;
+
+        &:hover {
+          color: var(--secondary);
+        }
+      }
+    }
+
+    /* 날짜는 제목 아래로 */
+    & > .meta {
+      margin: 0.4rem 0 0 0;
+      font-size: 0.78rem;
+      color: var(--gray);
+      opacity: 1;
+    }
+
+    /* 기본 스타일은 목록에서 태그를 숨기지만, 논문 리뷰는 태그가 곧 분류이므로 보여 줍니다 */
+    & > .tags {
+      justify-content: flex-start;
+      margin: 0.6rem 0 0 0;
+
+      &:empty {
+        display: none;
+      }
+    }
+  }
+}
+
+/* --- 12. 푸터: 저작권 한 줄처럼 작고 흐리게 -----------------------------
+   Quartz는 MIT 라이선스라 "Created with Quartz" 문구를 꼭 표시할 의무는 없습니다.
+   통째로 없애려면 quartz.config.yaml 의 @quartz-community/footer 를 false 로.  */
+.page > #quartz-body footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.9rem;
+  margin-bottom: 2rem;
+  font-size: 0.72rem;
+  line-height: 1.6;
+  color: var(--gray);
+  opacity: 0.6;
+
+  & p {
+    margin: 0;
+  }
+
+  & ul {
+    margin: 0;
+    gap: 0.9rem;
+  }
+
+  & a {
+    color: inherit;
+    text-decoration: none;
+
+    &:hover {
+      color: var(--secondary);
+    }
+  }
+}
+
+/* --- 13. 논문 목록 (custom/paperListView.tsx) ---------------------------
+   제목 → 날짜·학회 → 한 줄 요약 → 태그. 글마다 상자를 두르지 않고
+   사이에 얇은 선만 둡니다 (블로그 글 목록의 기본 모양).
+   제목 폰트를 본문 산세리프로 바꾸고 싶으면 title의 font-family를 var(--bodyFont)로. */
+.page > #quartz-body article {
+  & .bases-view-tabs:has(> :only-child) {
+    display: none; /* 보기가 하나뿐이면 탭 줄을 감춥니다 */
+  }
+
+  & .bases-view-meta {
+    display: none; /* "Showing N of N entries" — 목록에선 군더더기 */
+  }
+
+  & .paper-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* 페이지 밖의 글은 감춥니다 (display:grid가 hidden 속성을 덮어쓰므로 명시) */
+  & .paper-item[hidden] {
+    display: none;
+  }
+
+  & .paper-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 1.6rem;
+    align-items: start;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 1.7rem 0;
+    border-bottom: 1px solid var(--lightgray);
+  }
+
+  & .paper-item-title {
+    margin: 0;
+    font-family: var(--headerFont);
+    font-size: 1.25rem;
+    font-weight: $boldWeight;
+    line-height: 1.5;
+    word-break: keep-all;
+
+    & > a {
+      background-color: transparent;
+      color: var(--dark);
+      text-decoration: none;
+      transition: color 0.15s ease;
+
+      &:hover {
+        color: var(--secondary);
+      }
+    }
+  }
+
+  /* 제목 바로 아래 한 줄: 날짜 · 학회 */
+  & .paper-item-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.4rem;
+    margin: 0.45rem 0 0 0;
+    font-size: 0.78rem;
+    color: var(--gray);
+  }
+
+  & .paper-item-sep {
+    opacity: 0.5;
+  }
+
+  /* 요약은 3줄까지만, 넘치면 말줄임 */
+  & .paper-item-desc-link {
+    display: block;
+    background-color: transparent;
+    color: inherit;
+    text-decoration: none;
+    font-weight: $normalWeight;
+  }
+
+  & .paper-item-desc {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin: 0.6rem 0 0 0;
+    font-size: 0.9rem;
+    line-height: 1.75;
+    color: var(--darkgray);
+    word-break: keep-all;
+  }
+
+  & .paper-item-tags {
+    margin-top: 0.7rem;
+  }
+
+  /* 썸네일 비율을 바꾸려면 aspect-ratio 한 줄만 고치면 됩니다 (1/1, 16/9 …).
+     프론트매터에서 thumbnail 줄을 빼면 그 글은 썸네일 없이 나옵니다. */
+  & .paper-item-thumb {
+    display: block;
+    width: 150px;
+    background-color: transparent;
+    line-height: 0;
+
+    & img {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+      border-radius: 2px;
+      margin: 0;
+    }
+  }
+
+  & .paper-list-empty {
+    color: var(--gray);
+  }
+
+  /* 페이지 번호 (1 2 3 …) — 버튼 모양 없이 숫자만.
+     바로 위 글의 아래 선이 이미 구분선 역할을 하므로 여기엔 선을 긋지 않습니다. */
+  & .paper-pagination {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.2rem;
+    margin: 1.6rem 0 0.5rem 0;
+  }
+
+  & .paper-page-btn {
+    /* 손가락으로 누를 수 있는 최소 크기를 지킵니다 (44×44) */
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    padding: 0 0.5rem;
+    border: none;
+    background-color: transparent;
+    color: var(--gray);
+    font-family: inherit;
+    font-size: 0.88rem;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    transition: color 0.15s ease;
+
+    &:hover {
+      color: var(--secondary);
+    }
+
+    &.active {
+      color: var(--dark);
+      font-weight: $semiBoldWeight;
+      text-decoration: underline;
+      text-underline-offset: 5px;
+    }
+  }
+}
+
+/* 모바일에서는 썸네일만 작게 줄입니다 (오른쪽 자리는 그대로).
+   폭을 꽉 채우면 글마다 큰 그림이 하나씩 끼어서 목록을 훑기 어려워집니다. */
+@media all and ($mobile) {
+  .page > #quartz-body article .paper-item {
+    gap: 1rem;
+    padding: 1.4rem 0;
+
+    & .paper-item-thumb {
+      width: 84px;
+    }
+
+    & .paper-item-title {
+      font-size: 1.1rem;
+    }
+  }
+}
+
+/* --- 14. 글 상단 논문 정보 줄 (custom/PaperMeta.tsx) -------------------- */
+.paper-meta {
+  margin: 0.15rem 0 0 0;
+
+  & .paper-meta-original {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--gray);
+    word-break: keep-all;
+  }
+
+  & .paper-meta-facts {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.45rem;
+    margin: 0.3rem 0 0 0;
+    font-size: 0.82rem;
+    color: var(--gray);
+  }
+
+  & .paper-meta-sep {
+    opacity: 0.5;
+  }
+
+  & .paper-meta-facts a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    color: var(--secondary);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+  }
+}
+
+/* --- 14. 인쇄: 리뷰를 PDF로 뽑을 때 사이드바 제거 ----------------------- */
+@media print {
+  .sidebar,
+  .footer,
+  .breadcrumb-container {
+    display: none !important;
+  }
+
+  .page > #quartz-body article {
+    font-size: 11pt;
+    line-height: 1.6;
+  }
+}
