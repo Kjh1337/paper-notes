@@ -19,8 +19,9 @@ import { joinSegments, pathToRoot } from "../quartz/util/path"
 const PROFILE = {
   image: "static/profile.jpg",
   name: "Jihyun Ko",
-  // 다른 후보들: "읽은 척 방지용" / "오늘도 abstract만 읽었다" / "제목만 보고 판단하지 않으려고"
-  tagline: "그래서 이게 왜 되는데",
+  // 위 사진(거위)을 받는 문구입니다. 사진을 다른 걸로 바꾸면 이 줄도 같이 손보세요.
+  // 다른 후보들: "까먹을까 봐 적어둠" / "논문은 다 잘 된다고 한다" / "두 번 읽기 싫어서"
+  tagline: "거위야 논문 리뷰 해줘",
   location: "Ulsan, Korea",
   links: [
     { label: "GitHub", href: "https://github.com/Kjh1337", icon: "github" },
