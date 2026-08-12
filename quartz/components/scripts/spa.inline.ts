@@ -68,10 +68,24 @@ async function _navigate(url: URL, isBack: boolean = false) {
   isNavigating = true
   startLoading()
   p = p || new DOMParser()
+
+  // 서버가 리다이렉트한 최종 주소. 상대경로(./img.png)를 절대경로로 바꿀 때
+  // 반드시 "HTML이 실제로 서빙된 주소"를 기준으로 삼아야 합니다.
+  //
+  // 예) GitHub Pages 는 /paper-notes 를 /paper-notes/ 로 301 시킵니다.
+  //     슬래시가 없는 주소를 기준으로 잡으면 ./static/profile.jpg 가
+  //     /static/profile.jpg (한 단계 위)로 풀려서 이미지가 전부 깨집니다.
+  let resolvedUrl = url
   const contents = await fetchCanonical(url)
     .then((res) => {
       const contentType = res.headers.get("content-type")
       if (contentType?.startsWith("text/html")) {
+        if (res.url) {
+          const finalUrl = new URL(res.url)
+          finalUrl.hash = url.hash // 응답 주소에는 프래그먼트가 없으므로 원래 것을 유지
+          finalUrl.search = url.search
+          resolvedUrl = finalUrl
+        }
         return res.text()
       } else {
         window.location.assign(url)
@@ -92,7 +106,7 @@ async function _navigate(url: URL, isBack: boolean = false) {
   cleanupFns.clear()
 
   const html = p.parseFromString(contents, "text/html")
-  normalizeRelativeURLs(html, url)
+  normalizeRelativeURLs(html, resolvedUrl)
 
   let title = html.querySelector("title")?.textContent
   if (title) {
@@ -129,7 +143,12 @@ async function _navigate(url: URL, isBack: boolean = false) {
   // delay setting the url until now
   // at this point everything is loaded so changing the url should resolve to the correct addresses
   if (!isBack) {
-    history.pushState({}, "", url)
+    history.pushState({}, "", resolvedUrl)
+  } else if (resolvedUrl.href !== window.location.href) {
+    // 뒤로가기로 돌아온 주소가 리다이렉트 대상이었다면 주소창을 최종 주소로 맞춰 둡니다.
+    // 이렇게 해 두지 않으면 이 항목으로 돌아올 때마다 같은 문제가 되풀이되고,
+    // 여기서 새로 누르는 링크도 잘못된 기준으로 풀립니다.
+    history.replaceState({}, "", resolvedUrl)
   }
 
   notifyNav(getFullSlug(window))
