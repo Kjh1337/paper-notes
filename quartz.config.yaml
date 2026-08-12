@@ -347,7 +347,13 @@ plugins:
     enabled: true
     options:
       links:
-        RSS: /index.xml
+        # 푸터 링크는 페이지 깊이에 맞춰 자동으로 풀리지 않습니다. 여기 적은 주소가
+        # 그대로 href 에 들어가므로, 어느 글에서 눌러도 맞는 주소여야 합니다.
+        #
+        # "/index.xml" 처럼 프로젝트 이름을 빼면 kjh1337.github.io/index.xml 로 가서
+        # GitHub의 "사이트 없음" 404가 뜹니다. 위 baseUrl 의 경로 부분을 꼭 붙이세요.
+        # (도메인이나 저장소 이름을 바꾸면 baseUrl 과 이 줄을 함께 고쳐야 합니다.)
+        RSS: /paper-notes/index.xml
     layout:
       position: footer
       priority: 50
