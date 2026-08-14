@@ -30,6 +30,7 @@ export const TAG_DISPLAY_NAMES: Record<string, string> = {
   "fine-tuning": "Fine-tuning",
   moe: "MoE",
   rag: "RAG",
+  graphrag: "GraphRAG",
   lora: "LoRA",
   sft: "SFT",
   dpo: "DPO",

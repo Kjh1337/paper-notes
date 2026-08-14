@@ -7,8 +7,11 @@
 
 1. 옵시디언에서 리뷰를 작성합니다. (`content/templates/논문 리뷰 템플릿.md` 참고)
 2. 완성된 `.md` 파일을 `content/papers/` 에 복사합니다. **하위 폴더는 만들지 않습니다** — 분류는 태그로 합니다.
-3. 본문 이미지는 글과 같은 폴더에 두고 `![[그림.png]]`로 삽입합니다.
+3. 본문 이미지는 `content/images/<글파일명>/` 에 넣고 `![[그림.png]]`로 삽입합니다.
+   `papers/` 에는 `.md`만 둡니다 — 글마다 그림이 10장씩 쌓이면 목록이 안 보입니다.
+   파일명만 적으면 폴더가 어디든 알아서 찾아갑니다 (`markdownLinkResolution: shortest`).
 4. 목록 썸네일은 `content/images/` 에 넣고 frontmatter `thumbnail`에 경로를 씁니다.
+   본문 그림을 그대로 쓰지 말고 폭 800px 정도로 줄인 사본을 씁니다 (홈에서 전부 로드됩니다).
 5. 로컬에서 확인 → 커밋 & 푸시하면 자동 배포됩니다.
 
 ### frontmatter
@@ -62,8 +65,8 @@ Quartz 자체 문서를 로컬에서 읽으려면 `npm run docs` (http://localho
 content/
 ├── index.md             홈 — Paper Review.base 를 그대로 띄웁니다
 ├── Paper Review.base    전체 논문 목록 (쿼리 정의)
-├── papers/              논문 리뷰 — 하위 폴더 없이 전부 여기
-├── images/              목록 썸네일
+├── papers/              논문 리뷰 (.md 만) — 하위 폴더 없이 전부 여기
+├── images/              목록 썸네일 + 글별 본문 그림 폴더 (images/<글파일명>/)
 ├── templates/           옵시디언 템플릿 (빌드 제외)
 └── private/             비공개 노트 (빌드 제외 + git 제외)
 ```
