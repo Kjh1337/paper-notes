@@ -295,8 +295,10 @@ plugins:
       priority: 10
       condition: not-index
 
-  - source: "@quartz-community/content-meta" # 작성일 · 읽는 시간
+  - source: "@quartz-community/content-meta" # 작성일 (읽는 시간은 끔)
     enabled: true
+    options:
+      showReadingTime: false
     layout:
       position: beforeBody
       priority: 20
